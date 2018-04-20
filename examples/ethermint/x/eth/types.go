@@ -1,10 +1,12 @@
 package eth
 
 import (
+	"bytes"
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/rlp"
 )
 
 // Wraps the RLP serialises representation of Ethereum transaction
@@ -36,5 +38,9 @@ func (msg RawTxMsg) GetSignBytes() []byte {
 }
 
 func (msg RawTxMsg) DecodeRaw() (*ethtypes.Transaction, error) {
-	return nil, nil
+	tx := new(ethtypes.Transaction)
+	if err := tx.DecodeRLP(rlp.NewStream(bytes.NewReader(msg.raw), uint64(len(msg.raw)))); err != nil {
+		return nil, err
+	}
+	return tx, nil
 }
