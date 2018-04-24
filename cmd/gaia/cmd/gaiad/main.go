@@ -13,6 +13,8 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/cmd/gaia/app"
 	"github.com/cosmos/cosmos-sdk/server"
+	stake "github.com/cosmos/cosmos-sdk/x/stake"
+	stakecmd "github.com/cosmos/cosmos-sdk/x/stake/commands"
 )
 
 // rootCmd is the entry point for this binary
@@ -38,8 +40,24 @@ func generateApp(rootDir string, logger log.Logger) (abci.Application, error) {
 func main() {
 	server.AddCommands(rootCmd, app.DefaultGenAppState, generateApp, context)
 
-	// prepare and add flags
 	rootDir := os.ExpandEnv("$HOME/.gaiad")
+
+	export := func() (stake.GenesisState, error) {
+		dataDir := filepath.Join(rootDir, "data")
+		db, err := dbm.NewGoLevelDB("gaia", dataDir)
+		if err != nil {
+			return stake.GenesisState{}, err
+		}
+		app := app.NewGaiaApp(log.NewNopLogger(), db)
+		if err != nil {
+			return stake.GenesisState{}, err
+		}
+		return app.ExportStake(), nil
+	}
+
+	rootCmd.AddCommand(stakecmd.GetCmdExport(export, app.MakeCodec()))
+
+	// prepare and add flags
 	executor := cli.PrepareBaseCmd(rootCmd, "GA", rootDir)
 	executor.Execute()
 }
