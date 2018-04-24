@@ -49,9 +49,16 @@ func NewEndBlocker(k Keeper) sdk.EndBlocker {
 //_____________________________________________________________________
 
 // InitGenesis - store genesis parameters
-func InitGenesis(ctx sdk.Context, k Keeper, data GenesisState) {
+func (k Keeper) InitGenesis(ctx sdk.Context, data GenesisState) {
 	k.setPool(ctx, data.Pool)
 	k.setParams(ctx, data.Params)
+}
+
+// WriteGenesis - output genesis parameters
+func (k Keeper) WriteGenesis(ctx sdk.Context) GenesisState {
+	pool := k.GetPool(ctx)
+	params := k.GetParams(ctx)
+	return GenesisState{pool, params}
 }
 
 //_____________________________________________________________________
