@@ -48,7 +48,7 @@ func GoExecuteT(t *testing.T, command string) (cmd *exec.Cmd, pipeIn io.WriteClo
 	require.NoError(t, err)
 	pipeOut, err = cmd.StdoutPipe()
 	require.NoError(t, err)
-	go cmd.Start()
+	cmd.Start()
 	time.Sleep(time.Second)
 	return cmd, pipeIn, pipeOut
 }

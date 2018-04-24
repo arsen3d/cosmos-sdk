@@ -3,6 +3,7 @@ package clitest
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"strings"
 	"testing"
 	"time"
@@ -64,7 +65,7 @@ func TestGaiaCLIDeclareCandidacy(t *testing.T) {
 	flags := fmt.Sprintf("--node=%v --chain-id=%v", servAddr, chainID)
 
 	// start gaiad server
-	cmd, _, _ := tests.GoExecuteT(t, fmt.Sprintf("gaiad start --rpc.laddr=%v", servAddr))
+	cmd, _, tendermintOut := tests.GoExecuteT(t, fmt.Sprintf("gaiad start --rpc.laddr=%v", servAddr))
 	defer cmd.Process.Kill()
 
 	executeWrite(t, "gaiacli keys add foo --recover", pass, masterKey)
@@ -103,6 +104,11 @@ func TestGaiaCLIDeclareCandidacy(t *testing.T) {
 	assert.Equal(t, int64(99998), fooAcc.GetCoins().AmountOf("fermion"))
 	candidate = executeGetCandidate(t, fmt.Sprintf("gaiacli candidate %v --address-candidate=%v", flags, fooAddr))
 	assert.Equal(t, int64(2), candidate.Assets.Evaluate())
+
+	fmt.Println("Tendermint OUT ===================================================")
+	bz, err := ioutil.ReadAll(tendermintOut)
+	require.NoError(t, err)
+	fmt.Println(string(bz))
 }
 
 func executeWrite(t *testing.T, cmdStr string, writes ...string) {
